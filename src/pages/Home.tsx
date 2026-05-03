@@ -4,8 +4,6 @@ import { Footer } from "@/components/Footer";
 import { MinerWidget } from "@/components/MinerWidget";
 import { PresaleWidget } from "@/components/PresaleWidget";
 import { StatsBar } from "@/components/StatsBar";
-import { NewsFeed } from "@/components/NewsFeed";
-import { ReferralSection } from "@/components/ReferralSection";
 import { Roadmap } from "@/components/Roadmap";
 import { TOKENOMICS } from "@/lib/contracts";
 
@@ -26,7 +24,6 @@ function TokenomicsComparison() {
   return (
     <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ maxWidth: "960px", margin: "0 auto" }}>
-        {/* Title */}
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <span style={{ ...lbl, color: "rgba(124,58,237,0.7)" }}>Why presale</span>
           <h2 style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 700, fontSize: "clamp(28px, 4vw, 42px)", color: "#fff", marginTop: "10px", lineHeight: 1.1 }}>
@@ -38,10 +35,7 @@ function TokenomicsComparison() {
           </p>
         </div>
 
-        {/* Comparison cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "32px" }}>
-
-          {/* Presale card — winner */}
           <div style={{ background: "rgba(250,255,0,0.04)", border: "1px solid rgba(250,255,0,0.18)", borderRadius: "12px", padding: "28px 24px", position: "relative" }}>
             <div style={{ position: "absolute", top: "-1px", right: "20px", background: "#FAFF00", color: "#09090B", fontFamily: "'Geist Mono',monospace", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "3px 10px", borderRadius: "0 0 8px 8px" }}>
               Recommended
@@ -50,58 +44,40 @@ function TokenomicsComparison() {
               Stage 1 Presale
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>Investment</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "13px", color: "#fff" }}>100 PROS</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>BCN received</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "18px", fontWeight: 700, color: "#FAFF00" }}>{presaleBcnFor100Pros.toLocaleString()}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>Time required</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "12px", color: "rgba(250,255,0,0.8)" }}>Instant</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={lbl}>Price per BCN</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>{TOKENOMICS.stages[0].pricePerBcn} PROS</span>
-              </div>
+              {[
+                { label: "Investment", val: "100 PROS" },
+                { label: "BCN received", val: presaleBcnFor100Pros.toLocaleString(), big: true, color: "#FAFF00" },
+                { label: "Time required", val: "Instant", color: "rgba(250,255,0,0.8)" },
+                { label: "Price per BCN", val: `${TOKENOMICS.stages[0].pricePerBcn} PROS` },
+              ].map(({ label: l, val, big, color }, i, arr) => (
+                <div key={l} style={{ display: "flex", justifyContent: "space-between", borderBottom: i < arr.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none", paddingBottom: i < arr.length-1 ? "12px" : 0 }}>
+                  <span style={lbl}>{l}</span>
+                  <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: big ? "18px" : "13px", fontWeight: big ? 700 : 400, color: color ?? "#fff" }}>{val}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Mining card */}
           <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", padding: "28px 24px" }}>
             <div style={{ fontFamily: "'Tomorrow',sans-serif", fontWeight: 600, fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "20px" }}>
               Mining Sessions
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>Fee spent</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "13px", color: "#fff" }}>100 PROS</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>BCN earned</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "18px", fontWeight: 700, color: "rgba(255,255,255,0.45)" }}>
-                  {Math.min(maxMiningBcn, (100 / TOKENOMICS.miningFeeTotalPros) * TOKENOMICS.miningBcnPerSession).toLocaleString()}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-                <span style={lbl}>Time required</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "12px", color: "rgba(255,100,100,0.8)" }}>
-                  {Math.ceil((100 / TOKENOMICS.miningFeeTotalPros) * 2)} days
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={lbl}>Before unlock max</span>
-                <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
-                  {maxMiningBcn.toLocaleString()} BCN ({maxSessions} sessions)
-                </span>
-              </div>
+              {[
+                { label: "Fee spent", val: "100 PROS" },
+                { label: "BCN earned", val: Math.min(maxMiningBcn, (100 / TOKENOMICS.miningFeeTotalPros) * TOKENOMICS.miningBcnPerSession).toLocaleString(), big: true, color: "rgba(255,255,255,0.45)" },
+                { label: "Time required", val: `${Math.ceil((100 / TOKENOMICS.miningFeeTotalPros) * 2)} days`, color: "rgba(255,100,100,0.8)" },
+                { label: "Before unlock max", val: `${maxMiningBcn.toLocaleString()} BCN` },
+              ].map(({ label: l, val, big, color }, i, arr) => (
+                <div key={l} style={{ display: "flex", justifyContent: "space-between", borderBottom: i < arr.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none", paddingBottom: i < arr.length-1 ? "12px" : 0 }}>
+                  <span style={lbl}>{l}</span>
+                  <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: big ? "18px" : "12px", fontWeight: big ? 700 : 400, color: color ?? "rgba(255,255,255,0.6)" }}>{val}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Multiplier callout */}
         <div style={{ textAlign: "center", padding: "24px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)", borderRadius: "10px" }}>
           <span style={{ fontFamily: "'Geist Mono',monospace", fontSize: "11px", color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em" }}>
             Stage 1 presale returns{" "}
@@ -113,7 +89,6 @@ function TokenomicsComparison() {
           </span>
         </div>
 
-        {/* Allocation breakdown */}
         <div style={{ marginTop: "40px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
           {[
             { label: "Presale", pct: "40%", amt: "400M BCN", col: "#FAFF00" },
@@ -145,7 +120,6 @@ export default function Home() {
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1 }}>
         <Navbar />
 
-        {/* ── Hero ── */}
         <section style={{ padding: "80px 24px 60px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Geist Mono', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", padding: "6px 16px", borderRadius: "9999px", marginBottom: "32px" }}>
             <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#FAFF00", display: "inline-block", animation: "pulse 1.4s ease-in-out infinite" }} />
@@ -168,10 +142,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Stats ── */}
         <StatsBar />
 
-        {/* ── Ticker tape ── */}
         <div style={{ overflow: "hidden", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "10px 0", background: "rgba(250,255,0,0.02)" }}>
           <div style={{ display: "flex", gap: "64px", width: "max-content", animation: "ticker-scroll 28s linear infinite", fontFamily: "'Geist Mono', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(250,255,0,0.4)" }}>
             {Array(8).fill(null).map((_, i) => (
@@ -191,20 +163,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Tokenomics Comparison ── */}
         <TokenomicsComparison />
 
-        {/* ── News ── */}
-        <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <NewsFeed />
-        </section>
-
-        {/* ── Referral ── */}
-        <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <ReferralSection />
-        </section>
-
-        {/* ── Roadmap ── */}
         <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <Roadmap />
         </section>

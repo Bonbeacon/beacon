@@ -1,5 +1,4 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Component, ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,15 +9,6 @@ import Home from "@/pages/Home";
 import Litepaper from "@/pages/Litepaper";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: string }> {
   constructor(props: { children: ReactNode }) {
@@ -59,18 +49,16 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WalletProvider>
-            <ContractProvider>
-              <WouterRouter base="">
-                <Router />
-              </WouterRouter>
-              <Toaster />
-            </ContractProvider>
-          </WalletProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <TooltipProvider>
+        <WalletProvider>
+          <ContractProvider>
+            <WouterRouter base="">
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </ContractProvider>
+        </WalletProvider>
+      </TooltipProvider>
     </ErrorBoundary>
   );
 }
