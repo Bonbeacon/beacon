@@ -1,5 +1,5 @@
 import React from "react";
-import { useGetNews } from "../lib/api-client-react";
+import { useGetNews } from "@/lib/api-client-react";
 import { format } from "date-fns";
 
 export function NewsFeed() {

@@ -1,5 +1,5 @@
 import React from "react";
-import { useGetMinerStats } from "../lib/api-client-react";
+import { useGetMinerStats } from "@/lib/api-client-react";
 
 export function StatsBar() {
   const { data: stats } = useGetMinerStats({ query: { refetchInterval: 30000 } });

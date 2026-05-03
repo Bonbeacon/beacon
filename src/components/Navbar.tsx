@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "wouter";
 import { useWallet } from "@/contexts/WalletContext";
 import { Button } from "@/components/ui/button";
-import { useGetWalletBalance, getGetWalletBalanceQueryKey } from "../lib/api-client-react";
+import { useGetWalletBalance, getGetWalletBalanceQueryKey } from "@/lib/api-client-react";
 
 export function Navbar() {
   const { address, isConnected, connect, isCorrectNetwork, switchNetwork } = useWallet();

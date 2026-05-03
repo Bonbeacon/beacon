@@ -6,7 +6,7 @@ import {
   getGetMinerSessionQueryKey,
   useStartMiningSession,
   useClaimMiningReward,
-} from "../lib/api-client-react";
+} from "@/lib/api-client-react";
 import { Lighthouse } from "./Lighthouse";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";

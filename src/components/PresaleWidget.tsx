@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useContracts } from "@/contexts/ContractContext";
-import { useGetPresaleInfo, useRecordPresaleParticipation } from "../lib/api-client-react";
+import { useGetPresaleInfo, useRecordPresaleParticipation } from "@/lib/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { contractsDeployed, TOKENOMICS } from "@/lib/contracts";
 import { ethers } from "ethers";

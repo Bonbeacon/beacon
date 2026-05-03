@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
-import { useGenerateReferralCode, useGetReferralStats, getGetReferralStatsQueryKey } from "../lib/api-client-react";
+import { useGenerateReferralCode, useGetReferralStats, getGetReferralStatsQueryKey } from "@/lib/api-client-react";
 import { FaXTwitter } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
 

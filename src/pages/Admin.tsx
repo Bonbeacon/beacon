@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
-import { useGetAdminStats, useAdminWithdraw } from "../lib/api-client-react";
+import { useGetAdminStats, useAdminWithdraw } from "@/lib/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
