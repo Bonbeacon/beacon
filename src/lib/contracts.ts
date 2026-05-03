@@ -125,6 +125,37 @@ export const PRESALE_ABI = [
     inputs: [{ name: "code", type: "string" }],
     outputs: [],
   },
+  // Check if a wallet has registered — returns bytes32(0) if not
+  {
+    name: "referralCodeHash",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "owner", type: "address" }],
+    outputs: [{ name: "", type: "bytes32" }],
+  },
+  // Deployer withdrawals
+  {
+    name: "deployerWithdraw",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "destination", type: "address" }],
+    outputs: [],
+  },
+  {
+    name: "withdrawAll",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "destination", type: "address" }],
+    outputs: [],
+  },
+  // Accumulated deployer share (35% of raised PROS)
+  {
+    name: "deployerSharePros",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
   // Views
   {
     name: "getCurrentStageInfo",

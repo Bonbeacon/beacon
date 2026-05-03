@@ -26,6 +26,14 @@ interface ContractContextType {
   getOnChainBcnBalance: (address: string) => Promise<number>;
   estimateBcnOut: (prosEther: string, withReferral?: boolean) => Promise<{ base: number; withBonus: number } | null>;
   registerReferral: (code: string) => Promise<string>;
+  /** Returns true if this address has registered a referral code on-chain */
+  hasRegisteredReferral: (address: string) => Promise<boolean>;
+  /** Withdraw 35% deployer share from presale contract */
+  deployerWithdraw: (destination: string) => Promise<string>;
+  /** Withdraw all PROS from presale contract */
+  withdrawAll: (destination: string) => Promise<string>;
+  /** Get accumulated deployer share in presale contract */
+  getDeployerShare: () => Promise<number>;
   sendPros: (toAddress: string, amountEther: string) => Promise<string>;
 }
 
@@ -134,6 +142,51 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     return receipt.hash;
   }, []);
 
+  /**
+   * Returns true if this address has registered a referral code on-chain.
+   * The contract stores the code as keccak256 hash — plain text is NOT on-chain.
+   * bytes32(0) means not registered.
+   */
+  const hasRegisteredReferral = useCallback(async (address: string): Promise<boolean> => {
+    if (!contractsDeployed) return false;
+    try {
+      const contract = await getPresaleContract(false);
+      const hash: string = await contract.referralCodeHash(address);
+      return hash !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const deployerWithdraw = useCallback(async (destination: string): Promise<string> => {
+    if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
+    const contract = await getPresaleContract(true);
+    const tx = await contract.deployerWithdraw(destination);
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
+    return receipt.hash;
+  }, []);
+
+  const withdrawAll = useCallback(async (destination: string): Promise<string> => {
+    if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
+    const contract = await getPresaleContract(true);
+    const tx = await contract.withdrawAll(destination);
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
+    return receipt.hash;
+  }, []);
+
+  const getDeployerShare = useCallback(async (): Promise<number> => {
+    if (!contractsDeployed) return 0;
+    try {
+      const contract = await getPresaleContract(false);
+      const raw = await contract.deployerSharePros();
+      return Number(ethers.formatEther(raw));
+    } catch {
+      return 0;
+    }
+  }, []);
+
   const sendPros = useCallback(async (toAddress: string, amountEther: string): Promise<string> => {
     const provider = getSigner();
     const signer = await provider.getSigner();
@@ -156,6 +209,10 @@ export function ContractProvider({ children }: { children: ReactNode }) {
       getOnChainBcnBalance,
       estimateBcnOut,
       registerReferral,
+      hasRegisteredReferral,
+      deployerWithdraw,
+      withdrawAll,
+      getDeployerShare,
       sendPros,
     }}>
       {children}
