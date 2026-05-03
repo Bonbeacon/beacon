@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useContracts } from "@/contexts/ContractContext";
 import { useToast } from "@/hooks/use-toast";
@@ -10,10 +10,12 @@ const VIRAL_TEXTS = [
   "🛰️ Just started mining $BCN on Pharos. 200 BCN every 48 hours, 5-stage presale with unlock June 30. Devs can't sell before community does. This is the move. Use my referral for +15% bonus:",
 ];
 
-function getViralText(code: string, link: string) {
+function getViralText(_code: string, link: string) {
   const base = VIRAL_TEXTS[Math.floor(Math.random() * VIRAL_TEXTS.length)];
   return `${base} ${link} #BCN #BEACON #Pharos #DeFi #Crypto #Web3 #Altcoin #Presale`;
 }
+
+const LS_KEY = (addr: string) => `bcn_ref_${addr.toLowerCase()}`;
 
 const lbl: React.CSSProperties = {
   fontFamily: "'Geist Mono', monospace",
@@ -33,23 +35,36 @@ export function ReferralSection() {
   const [registering, setRegistering] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Restore registered code from localStorage when wallet connects/changes
-  React.useEffect(() => {
-    if (!address) { setRegisteredCode(null); return; }
-    const saved = localStorage.getItem(`bcn_ref_${address.toLowerCase()}`);
-    setRegisteredCode(saved ?? null);
+  // Track last known address to detect wallet switch vs simple disconnect
+  const lastAddrRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (address) {
+      // New address connected — load from localStorage for this wallet
+      lastAddrRef.current = address;
+      const saved = localStorage.getItem(LS_KEY(address));
+      setRegisteredCode(saved ?? null);
+    }
+    // If address is null (disconnected), keep showing the last code —
+    // it will be refreshed when the user reconnects.
   }, [address]);
 
-  const siteBase = typeof window !== "undefined" ? window.location.origin : "https://beacon-steel-one.vercel.app";
-  const refLink = registeredCode ? `${siteBase}/?ref=${encodeURIComponent(registeredCode)}` : "";
+  const siteBase = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://beacon-steel-one.vercel.app";
+  const refLink = registeredCode
+    ? `${siteBase}/?ref=${encodeURIComponent(registeredCode)}`
+    : "";
 
   const handleRegister = async () => {
     if (!code.trim() || registering) return;
     if (code.trim().length < 3 || code.trim().length > 20) {
-      toast({ title: "Invalid code", description: "Code must be 3–20 characters.", variant: "destructive" }); return;
+      toast({ title: "Invalid code", description: "Code must be 3–20 characters.", variant: "destructive" });
+      return;
     }
     if (!/^[a-zA-Z0-9_]+$/.test(code.trim())) {
-      toast({ title: "Invalid code", description: "Letters, numbers and underscores only.", variant: "destructive" }); return;
+      toast({ title: "Invalid code", description: "Letters, numbers and underscores only.", variant: "destructive" });
+      return;
     }
     setRegistering(true);
     try {
@@ -57,11 +72,19 @@ export function ReferralSection() {
       const finalCode = code.trim().toUpperCase();
       await contracts.registerReferral(finalCode);
       setRegisteredCode(finalCode);
-      if (address) localStorage.setItem(`bcn_ref_${address.toLowerCase()}`, finalCode);
+      // Persist to localStorage so it survives disconnect/reconnect
+      const addrKey = address ?? lastAddrRef.current;
+      if (addrKey) localStorage.setItem(LS_KEY(addrKey), finalCode);
       toast({ title: "Referral code registered!", description: `Code "${finalCode}" is now live on-chain.` });
     } catch (err: any) {
-      toast({ title: "Registration failed", description: err?.reason ?? err?.message ?? "Try a different code — it may already be taken.", variant: "destructive" });
-    } finally { setRegistering(false); }
+      toast({
+        title: "Registration failed",
+        description: err?.reason ?? err?.message ?? "Try a different code — it may already be taken.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegistering(false);
+    }
   };
 
   const handleCopy = () => {
@@ -88,18 +111,33 @@ export function ReferralSection() {
           Referral Program
         </h2>
         <p style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.35)", marginTop: "10px", lineHeight: 1.8 }}>
-          Register your unique code on-chain. Every presale buyer who uses your link gets <span style={{ color: "#7C3AED" }}>+15% bonus BCN</span>.
+          Register your unique code on-chain. Every presale buyer who uses your link gets{" "}
+          <span style={{ color: "#7C3AED" }}>+15% bonus BCN</span>.
         </p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-        {/* Register code */}
+
+        {/* ── Panel 1: Register or show code ── */}
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 600, fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)" }}>
             1. Register Your Code
           </div>
 
-          {!isConnected ? (
+          {/* Always show active code if we have one, regardless of connection state */}
+          {registeredCode ? (
+            <div style={{ padding: "14px 16px", background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: "8px" }}>
+              <div style={lbl}>Your active code</div>
+              <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "20px", fontWeight: 700, color: "#7C3AED", marginTop: "6px", letterSpacing: "0.1em" }}>
+                {registeredCode}
+              </div>
+              {!isConnected && (
+                <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "10px", color: "rgba(255,255,255,0.25)", marginTop: "8px" }}>
+                  Reconnect wallet to share
+                </div>
+              )}
+            </div>
+          ) : !isConnected ? (
             <button
               onClick={connect}
               style={{ padding: "12px", background: "#FAFF00", color: "#09090B", border: "none", borderRadius: "9999px", fontFamily: "'Geist Mono', monospace", fontWeight: 700, fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
@@ -107,13 +145,6 @@ export function ReferralSection() {
               onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
               Connect Wallet First
             </button>
-          ) : registeredCode ? (
-            <div style={{ padding: "14px 16px", background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: "8px" }}>
-              <div style={lbl}>Your active code</div>
-              <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "20px", fontWeight: 700, color: "#7C3AED", marginTop: "6px", letterSpacing: "0.1em" }}>
-                {registeredCode}
-              </div>
-            </div>
           ) : (
             <>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -146,10 +177,10 @@ export function ReferralSection() {
           )}
         </div>
 
-        {/* Share link */}
+        {/* ── Panel 2: Share & Earn ── */}
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 600, fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)" }}>
-            2. Share & Earn
+            2. Share &amp; Earn
           </div>
 
           {!registeredCode ? (
@@ -187,7 +218,8 @@ export function ReferralSection() {
 
               <div style={{ padding: "10px 14px", background: "rgba(250,255,0,0.03)", border: "1px solid rgba(250,255,0,0.08)", borderRadius: "8px" }}>
                 <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.35)", lineHeight: 1.7 }}>
-                  When someone buys using your link they get <span style={{ color: "#FAFF00" }}>+15% bonus BCN</span> automatically on-chain.
+                  When someone buys using your link they get{" "}
+                  <span style={{ color: "#FAFF00" }}>+15% bonus BCN</span> automatically on-chain.
                 </span>
               </div>
             </>
