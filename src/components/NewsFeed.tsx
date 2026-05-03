@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 export function NewsFeed() {
   const { data: news } = useGetNews();
-  if (!news || news.length === 0) return null;
+  if (!news || !Array.isArray(news) || news.length === 0) return null;
 
   return (
     <div style={{ maxWidth: "960px", margin: "0 auto", width: "100%" }}>
