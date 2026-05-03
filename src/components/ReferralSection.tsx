@@ -33,6 +33,13 @@ export function ReferralSection() {
   const [registering, setRegistering] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Restore registered code from localStorage when wallet connects/changes
+  React.useEffect(() => {
+    if (!address) { setRegisteredCode(null); return; }
+    const saved = localStorage.getItem(`bcn_ref_${address.toLowerCase()}`);
+    setRegisteredCode(saved ?? null);
+  }, [address]);
+
   const siteBase = typeof window !== "undefined" ? window.location.origin : "https://beacon-steel-one.vercel.app";
   const refLink = registeredCode ? `${siteBase}/?ref=${encodeURIComponent(registeredCode)}` : "";
 
@@ -47,9 +54,11 @@ export function ReferralSection() {
     setRegistering(true);
     try {
       toast({ title: "Confirm in wallet", description: "Register your referral code on-chain…" });
-      await contracts.registerReferral(code.trim().toUpperCase());
-      setRegisteredCode(code.trim().toUpperCase());
-      toast({ title: "Referral code registered!", description: `Code "${code.trim().toUpperCase()}" is now live on-chain.` });
+      const finalCode = code.trim().toUpperCase();
+      await contracts.registerReferral(finalCode);
+      setRegisteredCode(finalCode);
+      if (address) localStorage.setItem(`bcn_ref_${address.toLowerCase()}`, finalCode);
+      toast({ title: "Referral code registered!", description: `Code "${finalCode}" is now live on-chain.` });
     } catch (err: any) {
       toast({ title: "Registration failed", description: err?.reason ?? err?.message ?? "Try a different code — it may already be taken.", variant: "destructive" });
     } finally { setRegistering(false); }

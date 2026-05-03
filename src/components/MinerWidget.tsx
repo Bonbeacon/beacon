@@ -93,10 +93,16 @@ export function MinerWidget() {
   }, [isConnected, address, fetchSession]);
 
   useEffect(() => {
-    if (!session || session.claimed || !session.isActive) { setStatus("idle"); return; }
+    // No session ever started, or already claimed → idle
+    if (!session || session.claimed || session.startTime === 0) { setStatus("idle"); return; }
+    // Session exists + not claimed: check if claimable
+    if (session.canClaim || Date.now() >= session.endTime * 1000) {
+      setStatus("ready"); setTimeLeft("00:00:00"); return;
+    }
+    // Active and counting down
     const tick = () => {
       const dist = session.endTime * 1000 - Date.now();
-      if (session.canClaim || dist <= 0) {
+      if (dist <= 0) {
         setStatus("ready"); setTimeLeft("00:00:00");
       } else {
         setStatus("active");

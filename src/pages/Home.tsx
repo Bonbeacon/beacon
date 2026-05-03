@@ -5,8 +5,8 @@ import { MinerWidget } from "@/components/MinerWidget";
 import { PresaleWidget } from "@/components/PresaleWidget";
 import { StatsBar } from "@/components/StatsBar";
 import { ReferralSection } from "@/components/ReferralSection";
-import { DeployerPanel } from "@/components/DeployerPanel";
 import { Roadmap } from "@/components/Roadmap";
+import { DeployerPanel } from "@/components/DeployerPanel";
 import { TOKENOMICS } from "@/lib/contracts";
 
 const lbl: React.CSSProperties = {
@@ -171,7 +171,7 @@ export default function Home() {
         <Footer />
       </div>
 
-      {/* Deployer-only panel — hidden from regular users */}
+      {/* Deployer-only floating panel — visible only when VITE_DEPLOYER_ADDRESS matches connected wallet */}
       <DeployerPanel />
     </div>
   );

@@ -75,7 +75,7 @@ export function Navbar() {
                 style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3px", background: "rgba(250,255,0,0.06)", border: "1px solid rgba(250,255,0,0.15)", borderRadius: "10px", padding: "7px 14px", cursor: "pointer" }}>
                 <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", letterSpacing: "0.05em", color: "#FAFF00" }}>{truncate(address!)}</span>
                 <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "10px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)" }}>
-                  {bcnBalance !== null ? `${bcnBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} BCN` : "— BCN"}
+                  {bcnBalance !== null && bcnBalance > 0 ? `${bcnBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })} BCN` : "0 BCN"}
                 </span>
               </button>
 
@@ -85,7 +85,7 @@ export function Navbar() {
                     <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "10px", color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Connected</div>
                     <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "#FAFF00", marginTop: "2px" }}>{truncate(address!)}</div>
                     <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>
-                      {bcnBalance !== null ? `${bcnBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} BCN earned` : "Loading balance…"}
+                      {bcnBalance !== null ? `${bcnBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })} BCN` : "Loading…"}
                     </div>
                   </div>
                   <button
