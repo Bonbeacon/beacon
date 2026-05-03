@@ -1,0 +1,4 @@
+{
+  "twitter": "https://x.com/beaconbcn",
+  "discord": "https://discord.gg/beaconbcn"
+}

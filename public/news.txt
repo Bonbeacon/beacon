@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "title": "🚨 BEACON Goes Live on Pharos Mainnet",
+    "content": "The first beacon has been lit. BEACON ($BCN) is now officially live on Pharos Pacific Ocean Mainnet (Chain ID: 1672). Mining sessions are open. The lighthouse never sleeps.",
+    "date": "2026-05-03"
+  },
+  {
+    "id": "2",
+    "title": "⚡ Presale Stage 1 — The Early Signal",
+    "content": "Stage 1 is now live at 0.001 PROS per BCN. Only 10,000,000 BCN available at this price. The beam reaches those who arrive first. Don't miss the first light.",
+    "date": "2026-05-03"
+  },
+  {
+    "id": "3",
+    "title": "🗓️ Token Transfer Date: June 30, 2026",
+    "content": "BCN tokens earned through presale and mining will become fully transferable on June 30, 2026. Until then, accumulate. The protocol holds your signal safe.",
+    "date": "2026-05-03"
+  }
+]
