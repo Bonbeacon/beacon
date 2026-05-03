@@ -5,9 +5,9 @@ export function StatsBar() {
   const { data: stats } = useGetMinerStats({ query: { refetchInterval: 30000 } });
 
   const items = [
-    { label: "Total Miners", value: stats?.totalMiners.toLocaleString() ?? "—", color: "#FAFF00" },
-    { label: "Active Sessions", value: stats?.activeSessions.toLocaleString() ?? "—", color: "#7C3AED" },
-    { label: "BCN Distributed", value: stats?.totalBcnMined.toLocaleString() ?? "—", color: "rgba(255,255,255,0.85)" },
+    { label: "Total Miners", value: stats?.totalMiners?.toLocaleString() ?? "—", color: "#FAFF00" },
+    { label: "Active Sessions", value: stats?.activeSessions?.toLocaleString() ?? "—", color: "#7C3AED" },
+    { label: "BCN Distributed", value: stats?.totalBcnMined?.toLocaleString() ?? "—", color: "rgba(255,255,255,0.85)" },
   ];
 
   return (

@@ -174,7 +174,7 @@ export function ReferralSection() {
               </div>
               <div style={{ padding: "16px 20px", background: "rgba(124,58,237,0.06)", borderRadius: "8px", border: "1px solid rgba(124,58,237,0.15)" }}>
                 <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "26px", fontWeight: 700, color: "#7C3AED", lineHeight: 1 }}>
-                  {stats.totalBonusBcn.toLocaleString()}
+                  {stats.totalBonusBcn?.toLocaleString() ?? "0"}
                 </div>
                 <div style={{ ...labelStyle, marginTop: "6px" }}>Bonus BCN Earned</div>
               </div>
