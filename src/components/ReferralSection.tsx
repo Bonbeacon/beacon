@@ -1,63 +1,21 @@
 import React, { useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
-import { useGenerateReferralCode, useGetReferralStats, getGetReferralStatsQueryKey } from "@/lib/api-client-react";
-import { FaXTwitter } from "react-icons/fa6";
-import { useQueryClient } from "@tanstack/react-query";
+import { useContracts } from "@/contexts/ContractContext";
+import { useToast } from "@/hooks/use-toast";
 
-const VIRAL_TWEETS = [
-  "just became a beacon node on @PharosNetwork. if you're not mining $BCN right now you're going to be very unhappy in 3 months 🔦 [REFERRAL_LINK] #BCN #Pharos",
-  "the pharos chain just launched and there's already a miner on it. got in stage 1 at 0.001 PROS. this is how you find alpha 🌊 [REFERRAL_LINK] #BEACON #crypto",
-  "mining $BCN on pharos mainnet. zero hardware. just vibes and 0.05 PROS per session. [REFERRAL_LINK] 👁️ #BeaconToken",
-  "my beacon has been lit. 48hrs to claim. not financial advice but i'm not turning it off either. [REFERRAL_LINK] #BCN",
-  "found the first community miner on pharos. early is an understatement. [REFERRAL_LINK] 🗼 #Pharos #crypto",
-  "pharos mainnet launched apr 28. BEACON launched may 3. if you're reading this you're still early [REFERRAL_LINK] #BCN #PharosNetwork",
-  "accumulating $BCN before the june 30 unlock. referral link if you want in: [REFERRAL_LINK] ⚡",
-  "the signal never sleeps. neither do i apparently. [REFERRAL_LINK] 🔦 #BEACON #BCN",
-  "stage 1 of $BCN presale is 0.001 PROS per token. stage 5 is 0.005. do the math and grab this: [REFERRAL_LINK]",
-  "mining without hardware is the only mining i do tbh [REFERRAL_LINK] 🏴‍☠️ #BCN #pharos",
-  "beacon nodes are going live on @PharosNetwork. i lit mine. [REFERRAL_LINK] #BCN 🌊",
-  "0.05 PROS per session. 1000 BCN per 48hrs. the math is mathing. [REFERRAL_LINK] #BeaconToken",
-  "found $BCN on pharos this morning. by noon my session was running. [REFERRAL_LINK] ⚓ #crypto",
-  "not many people know about this yet. that's the point. [REFERRAL_LINK] 🔦 #BCN",
-  "launched on a chain that went live 5 days ago. respect the speed. [REFERRAL_LINK] 🚀 #Pharos",
-  "mining $BCN feels like finding a signal in the void. [REFERRAL_LINK] 📡",
-  "lit the beacon. 48h timer running. see you on the other side. [REFERRAL_LINK] #BCN",
-  "just connected to pharos mainnet for the first time and immediately found this [REFERRAL_LINK] 👁️ #BEACON",
-  "the signal is live. are you transmitting? [REFERRAL_LINK] ⚡ #BCN #Pharos",
-  "tokens unlock june 30. buying now at stage 1 prices. [REFERRAL_LINK] 📅 #BCN",
-  "referral gives you 15% bonus BCN. told my group. now telling you: [REFERRAL_LINK]",
-  "pharos is the new frontier. BEACON is the first signal. [REFERRAL_LINK] 📡",
-  "mining crypto from my browser while working. the future is wild. [REFERRAL_LINK] 💻 #BCN",
-  "found stage 1 of $BCN with 40% of tokens still available. [REFERRAL_LINK] 🔦",
-  "1000 $BCN per 48hr session. 5 sessions before unlock. do the math. [REFERRAL_LINK]",
-  "the beam reaches those who arrive first. [REFERRAL_LINK] 🌊 #BEACON",
-  "just aped into $BCN presale. use my link for 15% bonus: [REFERRAL_LINK]",
-  "this is what early looks like. pharos mainnet + browser miner + stage 1. [REFERRAL_LINK] 🔦",
-  "lit my signal at 2am. timer ends at 2am thursday. can't sleep anyway. [REFERRAL_LINK] #BCN",
-  "0 hardware. 0 technical knowledge. just a wallet and a browser. [REFERRAL_LINK] ⚡ #BeaconToken",
-  "the pharos network needs beacons. i became one. [REFERRAL_LINK] 📡 #BCN",
-  "crypto is just vibes until it isn't. $BCN is very much not vibes. [REFERRAL_LINK]",
-  "my wallet says i have 0 BCN. my miner says check back in 48h. [REFERRAL_LINK] ⏳",
-  "found alpha on pharos. sharing it with my 14 followers: [REFERRAL_LINK] 🌊 #BCN",
-  "stage 1 → stage 5 is a 5x price increase. get in now: [REFERRAL_LINK] 📈",
-  "mining $BCN while this tweet writes itself. [REFERRAL_LINK] 📡 #Pharos",
-  "beam is live. signal is strong. session is running. [REFERRAL_LINK] ⚡",
-  "first mover advantage on pharos mainnet. go: [REFERRAL_LINK] 🚀 #BCN",
-  "the signal doesn't ask if you deserve to see it. it just transmits. [REFERRAL_LINK] 📡",
-  "i have no idea what pharos is but my BCN is accumulating so [REFERRAL_LINK] 🤷 #crypto",
-  "referral system gives 15% bonus. click before someone else gets credit: [REFERRAL_LINK]",
-  "my mining session expires in 31hrs 22min. why am i watching this. [REFERRAL_LINK] ⏱️ #BCN",
-  "broadcasting on pharos mainnet fr fr [REFERRAL_LINK] 📡📡📡 #BCN",
-  "june 30 is the unlock. i'm accumulating until then. [REFERRAL_LINK] 📅 #BeaconToken",
-  "the signal reaches you or it doesn't. it reached me. [REFERRAL_LINK] 🌊",
-  "this tweet is sponsored by 0.05 PROS and 48 hours of patience. [REFERRAL_LINK] ⚓",
-  "new chain. new miner. same grind. [REFERRAL_LINK] 💀 #BCN #Pharos",
-  "when your session timer hits 0 and you click claim. that feeling: [REFERRAL_LINK] ✅ #BEACON",
-  "i don't make recommendations. i just mine $BCN and share links. [REFERRAL_LINK] 🔦",
-  "pharos mainnet: chain id 1672. BEACON: first miner. you: [REFERRAL_LINK] 👈 #BCN"
+const VIRAL_TEXTS = [
+  "🚨 The signal is live. $BCN just launched on Pharos Mainnet and early miners are already stacking. 200 BCN per 48h session. Stage 1 presale is 0.001 PROS — next stage doubles the price. Don't miss the first beacon. Use my link:",
+  "⚡ I'm mining $BEACON on Pharos and the presale is still Stage 1. 80M BCN at 0.001 PROS — then it's gone forever. This is the earliest you can get in. My referral link (+15% bonus BCN):",
+  "📡 BEACON ($BCN) is transmitting from Pharos Chain. The first DeFi signal. Mine daily. Buy the presale before Stage 2. 10× target ROI baked into the tokenomics. Get in early with my link:",
+  "🛰️ Just started mining $BCN on Pharos. 200 BCN every 48 hours, 5-stage presale with unlock June 30. Devs can't sell before community does. This is the move. Use my referral for +15% bonus:",
 ];
 
-const labelStyle: React.CSSProperties = {
+function getViralText(code: string, link: string) {
+  const base = VIRAL_TEXTS[Math.floor(Math.random() * VIRAL_TEXTS.length)];
+  return `${base} ${link} #BCN #BEACON #Pharos #DeFi #Crypto #Web3 #Altcoin #Presale`;
+}
+
+const lbl: React.CSSProperties = {
   fontFamily: "'Geist Mono', monospace",
   fontSize: "10px",
   letterSpacing: "0.14em",
@@ -67,173 +25,165 @@ const labelStyle: React.CSSProperties = {
 
 export function ReferralSection() {
   const { address, isConnected, connect } = useWallet();
-  const generateCode = useGenerateReferralCode();
-  const queryClient = useQueryClient();
-  const { data: stats, refetch } = useGetReferralStats(address || "", {
-    query: {
-      enabled: !!address,
-      queryKey: getGetReferralStatsQueryKey(address || ""),
+  const contracts = useContracts();
+  const { toast } = useToast();
+
+  const [code, setCode] = useState("");
+  const [registeredCode, setRegisteredCode] = useState<string | null>(null);
+  const [registering, setRegistering] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const siteBase = typeof window !== "undefined" ? window.location.origin : "https://beacon-steel-one.vercel.app";
+  const refLink = registeredCode ? `${siteBase}/?ref=${encodeURIComponent(registeredCode)}` : "";
+
+  const handleRegister = async () => {
+    if (!code.trim() || registering) return;
+    if (code.trim().length < 3 || code.trim().length > 20) {
+      toast({ title: "Invalid code", description: "Code must be 3–20 characters.", variant: "destructive" }); return;
     }
-  });
-
-  const handleGenerate = () => {
-    if (!address) return;
-    generateCode.mutate({ data: { walletAddress: address } }, {
-      onSuccess: () => { refetch(); }
-    });
+    if (!/^[a-zA-Z0-9_]+$/.test(code.trim())) {
+      toast({ title: "Invalid code", description: "Letters, numbers and underscores only.", variant: "destructive" }); return;
+    }
+    setRegistering(true);
+    try {
+      toast({ title: "Confirm in wallet", description: "Register your referral code on-chain…" });
+      await contracts.registerReferral(code.trim().toUpperCase());
+      setRegisteredCode(code.trim().toUpperCase());
+      toast({ title: "Referral code registered!", description: `Code "${code.trim().toUpperCase()}" is now live on-chain.` });
+    } catch (err: any) {
+      toast({ title: "Registration failed", description: err?.reason ?? err?.message ?? "Try a different code — it may already be taken.", variant: "destructive" });
+    } finally { setRegistering(false); }
   };
 
-  const referralUrl = stats?.code ? `https://beacon.xyz/?ref=${stats.code}` : "";
-
-  const handleShare = () => {
-    if (!referralUrl) return;
-    const template = VIRAL_TWEETS[Math.floor(Math.random() * VIRAL_TWEETS.length)];
-    const text = template.replace("[REFERRAL_LINK]", referralUrl);
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+  const handleCopy = () => {
+    if (!refLink) return;
+    navigator.clipboard.writeText(refLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "Copied!", description: "Referral link copied to clipboard." });
   };
 
-  const copyToClipboard = () => {
-    if (referralUrl) navigator.clipboard.writeText(referralUrl);
+  const handleShareX = () => {
+    if (!registeredCode) return;
+    const text = getViralText(registeredCode, refLink);
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div style={{ maxWidth: "720px", margin: "0 auto", width: "100%" }}>
+    <div style={{ maxWidth: "960px", margin: "0 auto", width: "100%" }}>
       {/* Header */}
       <div style={{ marginBottom: "40px" }}>
-        <h2 style={{
-          fontFamily: "'Tomorrow', sans-serif", fontWeight: 700,
-          fontSize: "22px", letterSpacing: "0.08em", textTransform: "uppercase",
-          color: "#fff", marginBottom: "8px",
-        }}>
-          Propagate the Signal
+        <span style={{ ...lbl, color: "rgba(124,58,237,0.7)" }}>Grow the network</span>
+        <h2 style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 700, fontSize: "clamp(22px, 3vw, 32px)", color: "#fff", marginTop: "8px", lineHeight: 1.1 }}>
+          Referral Program
         </h2>
-        <p style={{
-          fontFamily: "'Geist Mono', monospace", fontSize: "12px",
-          color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em", lineHeight: 1.7,
-        }}>
-          Refer a node operator. They get <span style={{ color: "#7C3AED" }}>+15% bonus BCN</span>.
-          You earn commission on their activity.
+        <p style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.35)", marginTop: "10px", lineHeight: 1.8 }}>
+          Register your unique code on-chain. Every presale buyer who uses your link gets <span style={{ color: "#7C3AED" }}>+15% bonus BCN</span>.
         </p>
       </div>
 
-      <div style={{
-        background: "rgba(255,255,255,0.025)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "12px",
-        padding: "32px 28px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-      }}>
-        {!isConnected ? (
-          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
-            <p style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em", lineHeight: 1.7 }}>
-              Connect your wallet to generate your referral link.
-            </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+        {/* Register code */}
+        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 600, fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)" }}>
+            1. Register Your Code
+          </div>
+
+          {!isConnected ? (
             <button
               onClick={connect}
-              style={{
-                padding: "11px 28px", background: "#FAFF00", color: "#09090B",
-                border: "none", borderRadius: "9999px",
-                fontFamily: "'Geist Mono', monospace", fontWeight: 700,
-                fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: "pointer",
-              }}
-            >
-              Connect Wallet
+              style={{ padding: "12px", background: "#FAFF00", color: "#09090B", border: "none", borderRadius: "9999px", fontFamily: "'Geist Mono', monospace", fontWeight: 700, fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+              Connect Wallet First
             </button>
-          </div>
-        ) : !stats?.code ? (
-          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
-            <p style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em", lineHeight: 1.7 }}>
-              Generate your unique referral link to start earning.
-            </p>
-            <button
-              onClick={handleGenerate}
-              disabled={generateCode.isPending}
-              style={{
-                padding: "11px 28px", background: "#FAFF00", color: "#09090B",
-                border: "none", borderRadius: "9999px",
-                fontFamily: "'Geist Mono', monospace", fontWeight: 700,
-                fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: "pointer", opacity: generateCode.isPending ? 0.6 : 1,
-              }}
-            >
-              {generateCode.isPending ? "Generating…" : "Generate Referral Link"}
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Stats row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div style={{ padding: "16px 20px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.07)" }}>
-                <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "26px", fontWeight: 700, color: "#FAFF00", lineHeight: 1 }}>
-                  {stats.referralCount}
-                </div>
-                <div style={{ ...labelStyle, marginTop: "6px" }}>Recruits</div>
-              </div>
-              <div style={{ padding: "16px 20px", background: "rgba(124,58,237,0.06)", borderRadius: "8px", border: "1px solid rgba(124,58,237,0.15)" }}>
-                <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "26px", fontWeight: 700, color: "#7C3AED", lineHeight: 1 }}>
-                  {stats.totalBonusBcn?.toLocaleString() ?? "0"}
-                </div>
-                <div style={{ ...labelStyle, marginTop: "6px" }}>Bonus BCN Earned</div>
+          ) : registeredCode ? (
+            <div style={{ padding: "14px 16px", background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: "8px" }}>
+              <div style={lbl}>Your active code</div>
+              <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: "20px", fontWeight: 700, color: "#7C3AED", marginTop: "6px", letterSpacing: "0.1em" }}>
+                {registeredCode}
               </div>
             </div>
-
-            {/* Link */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <span style={labelStyle}>Your Referral Link</span>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <div style={{
-                  flex: 1, padding: "11px 14px",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "8px",
-                  fontFamily: "'Geist Mono', monospace", fontSize: "12px",
-                  color: "#FAFF00", overflow: "hidden", whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                }}>
-                  {referralUrl}
+          ) : (
+            <>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={lbl}>Choose a code (3–20 chars, A-Z 0-9 _)</span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. SIGNAL42"
+                    value={code}
+                    onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ""))}
+                    maxLength={20}
+                    style={{ flex: 1, padding: "10px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#fff", fontFamily: "'Geist Mono', monospace", fontSize: "14px", letterSpacing: "0.08em", outline: "none" }}
+                    onFocus={e => (e.currentTarget.style.borderColor = "rgba(124,58,237,0.4)")}
+                    onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                  <button
+                    onClick={handleRegister}
+                    disabled={registering || !code.trim()}
+                    style={{ padding: "10px 18px", background: "#7C3AED", color: "#fff", border: "none", borderRadius: "8px", fontFamily: "'Geist Mono', monospace", fontWeight: 700, fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase", cursor: registering || !code.trim() ? "not-allowed" : "pointer", opacity: registering || !code.trim() ? 0.45 : 1 }}
+                    onMouseEnter={e => !registering && code.trim() && (e.currentTarget.style.opacity = "0.85")}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = registering || !code.trim() ? "0.45" : "1")}>
+                    {registering ? "…" : "Register"}
+                  </button>
                 </div>
-                <button
-                  onClick={copyToClipboard}
-                  style={{
-                    padding: "11px 18px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    borderRadius: "8px",
-                    fontFamily: "'Geist Mono', monospace", fontSize: "11px",
-                    letterSpacing: "0.08em", textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.7)", cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Copy
-                </button>
               </div>
-            </div>
+              <p style={{ fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.25)", lineHeight: 1.6 }}>
+                Registration is a one-time on-chain transaction. Code is permanent and unique.
+              </p>
+            </>
+          )}
+        </div>
 
-            {/* Share */}
-            <button
-              onClick={handleShare}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-                padding: "13px 0", width: "100%",
-                background: "#000", color: "#fff",
-                border: "1px solid rgba(255,255,255,0.15)",
-                borderRadius: "9999px",
-                fontFamily: "'Geist Mono', monospace", fontWeight: 600,
-                fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: "pointer", transition: "border-color 0.15s ease",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
-            >
-              <FaXTwitter style={{ width: "15px", height: "15px" }} />
-              Share on X
-            </button>
-          </>
-        )}
+        {/* Share link */}
+        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ fontFamily: "'Tomorrow', sans-serif", fontWeight: 600, fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)" }}>
+            2. Share & Earn
+          </div>
+
+          {!registeredCode ? (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+              <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.2)", textAlign: "center", letterSpacing: "0.06em" }}>
+                Register your code first to<br />unlock your referral link
+              </span>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={lbl}>Your referral link</span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ flex: 1, padding: "10px 14px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.18)", borderRadius: "8px", fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "#7C3AED", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {refLink}
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    style={{ padding: "10px 14px", background: copied ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.05)", border: `1px solid ${copied ? "rgba(124,58,237,0.4)" : "rgba(255,255,255,0.1)"}`, borderRadius: "8px", fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: copied ? "#7C3AED" : "rgba(255,255,255,0.5)", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleShareX}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "13px 0", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "9999px", fontFamily: "'Geist Mono', monospace", fontWeight: 700, fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.266 5.638 5.898-5.638Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                Share on X
+              </button>
+
+              <div style={{ padding: "10px 14px", background: "rgba(250,255,0,0.03)", border: "1px solid rgba(250,255,0,0.08)", borderRadius: "8px" }}>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.35)", lineHeight: 1.7 }}>
+                  When someone buys using your link they get <span style={{ color: "#FAFF00" }}>+15% bonus BCN</span> automatically on-chain.
+                </span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

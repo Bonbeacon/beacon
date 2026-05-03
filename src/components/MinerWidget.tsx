@@ -19,7 +19,7 @@ const card: React.CSSProperties = {
   flex: 1,
 };
 
-const label: React.CSSProperties = {
+const lbl: React.CSSProperties = {
   fontFamily: "'Geist Mono', monospace",
   fontSize: "10px",
   letterSpacing: "0.14em",
@@ -27,7 +27,7 @@ const label: React.CSSProperties = {
   color: "rgba(255,255,255,0.35)",
 };
 
-const value: React.CSSProperties = {
+const valStyle: React.CSSProperties = {
   fontFamily: "'Geist Mono', monospace",
   fontSize: "30px",
   fontWeight: 700,
@@ -52,19 +52,8 @@ const btnPrimary: React.CSSProperties = {
   transition: "opacity 0.15s",
 };
 
-const btnViolet: React.CSSProperties = {
-  ...btnPrimary,
-  background: "#7C3AED",
-  color: "#fff",
-};
-
-const btnGhost: React.CSSProperties = {
-  ...btnPrimary,
-  background: "transparent",
-  color: "rgba(255,255,255,0.25)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  cursor: "default",
-};
+const btnViolet: React.CSSProperties = { ...btnPrimary, background: "#7C3AED", color: "#fff" };
+const btnGhost: React.CSSProperties = { ...btnPrimary, background: "transparent", color: "rgba(255,255,255,0.25)", border: "1px solid rgba(255,255,255,0.08)", cursor: "default" };
 
 interface OnChainSession {
   startTime: number;
@@ -104,15 +93,11 @@ export function MinerWidget() {
   }, [isConnected, address, fetchSession]);
 
   useEffect(() => {
-    if (!session || session.claimed || !session.isActive) {
-      setStatus("idle");
-      return;
-    }
+    if (!session || session.claimed || !session.isActive) { setStatus("idle"); return; }
     const tick = () => {
       const dist = session.endTime * 1000 - Date.now();
       if (session.canClaim || dist <= 0) {
-        setStatus("ready");
-        setTimeLeft("00:00:00");
+        setStatus("ready"); setTimeLeft("00:00:00");
       } else {
         setStatus("active");
         const h = Math.floor(dist / 3600000);
@@ -130,32 +115,27 @@ export function MinerWidget() {
     if (!address || txPending) return;
     setTxPending(true);
     try {
-      toast({ title: "Confirm in wallet", description: "Approve 0.05 PROS in MetaMask…" });
+      toast({ title: "Confirm in wallet", description: "Approve the transaction in MetaMask…" });
       const txHash = await contracts.startMining();
-      toast({ title: "Session started", description: `Tx: ${txHash.slice(0,10)}…` });
+      toast({ title: "Session started!", description: `Tx: ${txHash.slice(0,10)}… Mining for 48h.` });
       await fetchSession();
     } catch (err: any) {
       toast({ title: "Session failed", description: err?.reason ?? err?.message ?? "Transaction rejected.", variant: "destructive" });
-    } finally {
-      setTxPending(false);
-    }
+    } finally { setTxPending(false); }
   };
 
   const handleClaim = async () => {
     if (!address || txPending) return;
     setTxPending(true);
     try {
-      toast({ title: "Confirm in wallet", description: "Approve 0.05 PROS claim fee in MetaMask…" });
+      toast({ title: "Confirm in wallet", description: "Confirm to claim your BCN reward…" });
       const txHash = await contracts.claimMining();
-      toast({ title: `${TOKENOMICS.miningBcnPerSession} BCN claimed!`, description: `Tx: ${txHash.slice(0,10)}…` });
-      setSession(null);
-      setStatus("idle");
+      toast({ title: `${TOKENOMICS.miningBcnPerSession} BCN claimed!`, description: `Sent directly to your wallet. Tx: ${txHash.slice(0,10)}…` });
+      setSession(null); setStatus("idle");
       await fetchSession();
     } catch (err: any) {
       toast({ title: "Claim failed", description: err?.reason ?? err?.message ?? "Transaction rejected.", variant: "destructive" });
-    } finally {
-      setTxPending(false);
-    }
+    } finally { setTxPending(false); }
   };
 
   return (
@@ -163,9 +143,7 @@ export function MinerWidget() {
       <div style={{ position:"absolute", top:0, right:0, width:"140px", height:"140px", background:"radial-gradient(circle at top right, rgba(250,255,0,0.05), transparent 70%)", pointerEvents:"none" }} />
 
       <div style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-        <span style={{ fontFamily:"'Tomorrow', sans-serif", fontWeight:600, fontSize:"14px", letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(255,255,255,0.9)" }}>
-          Beacon Node
-        </span>
+        <span style={{ fontFamily:"'Tomorrow', sans-serif", fontWeight:600, fontSize:"14px", letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(255,255,255,0.9)" }}>Beacon Node</span>
         <span style={{
           fontFamily:"'Geist Mono',monospace", fontSize:"10px", letterSpacing:"0.1em", textTransform:"uppercase",
           color: status==="active" ? "#FAFF00" : status==="ready" ? "#7C3AED" : "rgba(255,255,255,0.2)",
@@ -186,9 +164,7 @@ export function MinerWidget() {
           </p>
           <button style={btnPrimary} onClick={connect}
             onMouseEnter={e=>(e.currentTarget.style.opacity="0.85")}
-            onMouseLeave={e=>(e.currentTarget.style.opacity="1")}>
-            Connect Wallet
-          </button>
+            onMouseLeave={e=>(e.currentTarget.style.opacity="1")}>Connect Wallet</button>
         </div>
 
       ) : !isCorrectNetwork ? (
@@ -203,41 +179,40 @@ export function MinerWidget() {
         <div style={{ width:"100%", display:"flex", flexDirection:"column", gap:"14px" }}>
           <div style={{ padding:"14px 16px", background:"rgba(255,255,255,0.02)", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", gap:"10px" }}>
             <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={label}>Session Reward</span>
+              <span style={lbl}>Session Reward</span>
               <span style={{ fontFamily:"'Geist Mono',monospace", fontSize:"13px", fontWeight:600, color:"#FAFF00" }}>{TOKENOMICS.miningBcnPerSession.toLocaleString()} BCN</span>
             </div>
             <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={label}>Duration</span>
-              <span style={{ ...label, color:"rgba(255,255,255,0.5)" }}>48 hours</span>
+              <span style={lbl}>Duration</span>
+              <span style={{ ...lbl, color:"rgba(255,255,255,0.5)" }}>48 hours</span>
             </div>
             <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={label}>Start Fee</span>
-              <span style={{ ...label, color:"rgba(255,255,255,0.5)" }}>{TOKENOMICS.miningFeeStart} PROS</span>
+              <span style={lbl}>BCN sent to wallet</span>
+              <span style={{ ...lbl, color:"rgba(255,255,255,0.5)" }}>Instantly on claim</span>
             </div>
             <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={label}>Claim Fee</span>
-              <span style={{ ...label, color:"rgba(255,255,255,0.5)" }}>{TOKENOMICS.miningFeeClaim} PROS</span>
+              <span style={lbl}>Transferable from</span>
+              <span style={{ ...lbl, color:"rgba(124,58,237,0.8)" }}>June 30, 2026</span>
             </div>
           </div>
-          <div style={{ height:"1px", background:"rgba(255,255,255,0.05)" }} />
           <button
             style={{ ...btnPrimary, opacity: txPending ? 0.5 : 1 }}
             onClick={handleStart}
             disabled={txPending}
             onMouseEnter={e=>!txPending&&(e.currentTarget.style.opacity="0.85")}
             onMouseLeave={e=>(e.currentTarget.style.opacity=txPending?"0.5":"1")}>
-            {txPending ? "Waiting for wallet…" : `Start Session — ${TOKENOMICS.miningFeeStart} PROS`}
+            {txPending ? "Waiting for wallet…" : "Start Session"}
           </button>
         </div>
 
       ) : status === "active" ? (
         <div style={{ width:"100%", display:"flex", flexDirection:"column", gap:"14px" }}>
           <div style={{ textAlign:"center" }}>
-            <div style={value}>{timeLeft}</div>
-            <div style={{ ...label, marginTop:"6px" }}>remaining</div>
+            <div style={valStyle}>{timeLeft}</div>
+            <div style={{ ...lbl, marginTop:"6px" }}>remaining</div>
           </div>
           <div style={{ display:"flex", justifyContent:"space-between" }}>
-            <span style={label}>Est. Reward</span>
+            <span style={lbl}>Reward on claim</span>
             <span style={{ fontFamily:"'Geist Mono',monospace", fontSize:"12px", color:"#FAFF00" }}>{TOKENOMICS.miningBcnPerSession.toLocaleString()} BCN</span>
           </div>
           <button style={btnGhost} disabled>Transmitting signal…</button>
@@ -246,8 +221,8 @@ export function MinerWidget() {
       ) : (
         <div style={{ width:"100%", display:"flex", flexDirection:"column", gap:"14px" }}>
           <div style={{ textAlign:"center" }}>
-            <div style={{ ...value, color:"#7C3AED" }}>{TOKENOMICS.miningBcnPerSession.toLocaleString()} BCN</div>
-            <div style={{ ...label, marginTop:"6px" }}>ready to claim</div>
+            <div style={{ ...valStyle, color:"#7C3AED" }}>{TOKENOMICS.miningBcnPerSession.toLocaleString()} BCN</div>
+            <div style={{ ...lbl, marginTop:"6px" }}>ready to claim — sent directly to wallet</div>
           </div>
           <button
             style={{ ...btnViolet, opacity: txPending ? 0.5 : 1 }}
@@ -255,7 +230,7 @@ export function MinerWidget() {
             disabled={txPending}
             onMouseEnter={e=>!txPending&&(e.currentTarget.style.opacity="0.85")}
             onMouseLeave={e=>(e.currentTarget.style.opacity=txPending?"0.5":"1")}>
-            {txPending ? "Waiting for wallet…" : `Claim — ${TOKENOMICS.miningFeeClaim} PROS`}
+            {txPending ? "Waiting for wallet…" : "Claim Reward"}
           </button>
         </div>
       )}

@@ -1,17 +1,3 @@
-/**
- * ContractContext — real on-chain interactions via ethers.js
- *
- * When contracts are deployed and env vars set:
- *   - startMining()  → calls BeaconToken.startSession() with 0.05 PROS
- *   - claimMining()  → calls BeaconToken.claimReward() with 0.05 PROS
- *   - buyPresale()   → calls BeaconPresale.buy(referralCode) with PROS amount
- *   - getOnChainSession() → reads session state from chain
- *
- * When contracts are NOT deployed (env vars missing):
- *   - All functions fall back to API-only mode (records in DB only)
- *   - UI shows "contract not yet deployed" badge
- */
-
 import { createContext, useContext, ReactNode, useCallback } from "react";
 import { ethers } from "ethers";
 import {
@@ -33,24 +19,14 @@ interface OnChainSession {
 
 interface ContractContextType {
   contractsDeployed: boolean;
-
-  /** Start a 48h mining session. Sends 0.05 PROS to contract. Returns txHash. */
   startMining: () => Promise<string>;
-
-  /** Claim 200 BCN after session. Sends 0.05 PROS to contract. Returns txHash. */
   claimMining: () => Promise<string>;
-
-  /** Buy BCN in the presale. prosAmountEther is a string like "1.5". Returns txHash. */
   buyPresale: (prosAmountEther: string, referralCode?: string) => Promise<string>;
-
-  /** Read on-chain session state. Returns null if contracts not deployed. */
   getOnChainSession: (address: string) => Promise<OnChainSession | null>;
-
-  /** Read on-chain BCN balance for an address. Returns 0 if not deployed. */
   getOnChainBcnBalance: (address: string) => Promise<number>;
-
-  /** Estimate BCN output for a given PROS amount (from contract). */
   estimateBcnOut: (prosEther: string, withReferral?: boolean) => Promise<{ base: number; withBonus: number } | null>;
+  registerReferral: (code: string) => Promise<string>;
+  sendPros: (toAddress: string, amountEther: string) => Promise<string>;
 }
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
@@ -80,7 +56,6 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
     const contract = await getBcnContract(true);
     const fee = ethers.parseEther(String(TOKENOMICS.miningFeeStart));
-
     const tx = await contract.startSession({ value: fee });
     const receipt = await tx.wait();
     if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
@@ -91,7 +66,6 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
     const contract = await getBcnContract(true);
     const fee = ethers.parseEther(String(TOKENOMICS.miningFeeClaim));
-
     const tx = await contract.claimReward({ value: fee });
     const receipt = await tx.wait();
     if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
@@ -101,10 +75,7 @@ export function ContractProvider({ children }: { children: ReactNode }) {
   const buyPresale = useCallback(async (prosAmountEther: string, referralCode = ""): Promise<string> => {
     if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
     const contract = await getPresaleContract(true);
-
     const value = ethers.parseEther(prosAmountEther);
-    if (value < ethers.parseEther("0.01")) throw new Error("Minimum purchase is 0.01 PROS.");
-
     const tx = await contract.buy(referralCode, { value });
     const receipt = await tx.wait();
     if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
@@ -154,6 +125,27 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const registerReferral = useCallback(async (code: string): Promise<string> => {
+    if (!contractsDeployed) throw new Error("Contracts not deployed yet.");
+    const contract = await getPresaleContract(true);
+    const tx = await contract.registerReferralCode(code);
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
+    return receipt.hash;
+  }, []);
+
+  const sendPros = useCallback(async (toAddress: string, amountEther: string): Promise<string> => {
+    const provider = getSigner();
+    const signer = await provider.getSigner();
+    const tx = await signer.sendTransaction({
+      to: toAddress,
+      value: ethers.parseEther(amountEther),
+    });
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error("Transaction reverted.");
+    return receipt.hash;
+  }, []);
+
   return (
     <ContractContext.Provider value={{
       contractsDeployed,
@@ -163,6 +155,8 @@ export function ContractProvider({ children }: { children: ReactNode }) {
       getOnChainSession,
       getOnChainBcnBalance,
       estimateBcnOut,
+      registerReferral,
+      sendPros,
     }}>
       {children}
     </ContractContext.Provider>
